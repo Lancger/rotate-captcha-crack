@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path  # 导入 Path 类
 
 import torch
 from PIL import Image
@@ -16,7 +17,9 @@ if __name__ == "__main__":
     with torch.no_grad():
         cls_num = DEFAULT_CLS_NUM
         model = RotNetR(cls_num=cls_num, train=False)
-        model_path = WhereIsMyModel(model).with_index(opts.index).model_dir / "best.pth"
+        # model_path = WhereIsMyModel(model).with_index(opts.index).model_dir / "best.pth"
+        # 修改模型路径为 models 目录下的 best.pth
+        model_path = Path("models") / "best.pth"
         print(f"Use model: {model_path}")
         model.load_state_dict(get_state_dict(model_path))
         model = model.to(device=device)

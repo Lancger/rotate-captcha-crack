@@ -204,7 +204,12 @@ class Trainer:
                     total_val_loss += val_loss.mean().cpu().item()
                     eval_batch_count += 1
 
-            val_loss = total_val_loss / eval_batch_count
+            # 检查 eval_batch_count 是否为0
+            if eval_batch_count == 0:
+                self.log.warning(f"Epoch#{epoch_idx}. No validation batches. Skipping validation loss calculation.")
+                val_loss = float('inf')  # 或者使用其他合适的值
+            else:
+                val_loss = total_val_loss / eval_batch_count
             self.val_loss_array[epoch_idx] = val_loss
 
             self.lrm.sched_step(val_loss)
