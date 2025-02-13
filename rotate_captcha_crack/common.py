@@ -1,12 +1,10 @@
-import sys
-
 import torch
 
-if sys.version_info >= (3, 11):
-    import tomllib  # noqa: F401
+if torch.cuda.is_available():
+    device_count = torch.cuda.device_count()
+    if device_count > 0:
+        device = torch.device('cuda', device_count - 1)
+    else:
+        device = torch.device('cpu')
 else:
-    import tomli as tomllib  # noqa: F401
-
-# Use last CUDA, since `cuda:0` is always filled with tasks
-device = torch.device('cuda', torch.cuda.device_count() - 1)
-torch.backends.cudnn.benchmark = True
+    device = torch.device('cpu')

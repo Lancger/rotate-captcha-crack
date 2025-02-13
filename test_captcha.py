@@ -22,7 +22,7 @@ if __name__ == "__main__":
         model = model.to(device=device)
         model.eval()
 
-        img = Image.open("../data/tieba/1615096444.jpg")
+        img = Image.open("./data/4_216.jpg")
         img_ts = process_captcha(img, target_size=224)
         img_ts = img_ts.to(device=device)
 

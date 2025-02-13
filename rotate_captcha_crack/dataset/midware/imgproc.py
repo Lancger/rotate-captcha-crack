@@ -1,5 +1,6 @@
 import math
 import random
+import torch
 
 from torch import Tensor
 from torchvision.transforms import Normalize
@@ -8,6 +9,8 @@ from torchvision.transforms.functional import F_t
 
 from ...const import DEFAULT_TARGET_SIZE, SQRT2
 from .totensor import u8_to_float32
+
+SQRT2 = math.sqrt(2)
 
 DEFAULT_NORM = Normalize(
     mean=[0.485, 0.456, 0.406],
@@ -147,7 +150,24 @@ def from_img(src: Tensor, angle_factor: float, target_size: int = DEFAULT_TARGET
     return dst
 
 
-def strip_border(src: Tensor) -> Tensor:
+# def strip_border(src: Tensor) -> Tensor:
+#     """
+#     Strip the border out of the middle circle.
+
+#     Args:
+#         src (Tensor): square tensor with border
+
+#     Returns:
+#         Tensor: striped tensor ([C,H,W]=[src,src_size/sqrt(2),H])
+#     """
+
+#     src_size, src_w = src.shape[-2:]
+#     assert src_size == src_w
+
+#     dst = F.center_crop(src, src_size / SQRT2)
+#     return dst
+
+def strip_border(src: torch.Tensor) -> torch.Tensor:
     """
     Strip the border out of the middle circle.
 
@@ -157,13 +177,13 @@ def strip_border(src: Tensor) -> Tensor:
     Returns:
         Tensor: striped tensor ([C,H,W]=[src,src_size/sqrt(2),H])
     """
-
     src_size, src_w = src.shape[-2:]
-    assert src_size == src_w
-
-    dst = F.center_crop(src, src_size / SQRT2)
+    # 取较小的边长
+    min_size = min(src_size, src_w)
+    # 重新计算裁剪尺寸
+    crop_size = int(min_size / SQRT2)
+    dst = F.center_crop(src, crop_size)
     return dst
-
 
 def from_captcha(src: Tensor, angle_factor: float, target_size: int = DEFAULT_TARGET_SIZE) -> Tensor:
     """
