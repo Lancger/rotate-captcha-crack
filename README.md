@@ -2,6 +2,14 @@
 
 [中文](README_zh-cn.md) | English
 
+测试案例
+
+```bash
+(env_py39) ➜  rotate-captcha-crack git:(master) python test_captcha.py
+Use model: models/RotNetR/best.pth/best.pth
+Predict degree: 216.5625°
+```
+
 Predict the rotation angle of given picture through CNN. This project can be used for rotate-captcha cracking.
 
 Test result:
