@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     #################################
     ### Custom configuration area ###
-    dataset_root = Path("../data/unlabeled2017")
+    dataset_root = Path("./data/landscape")
 
     img_paths = list(glob_imgs(dataset_root))
     cls_num = DEFAULT_CLS_NUM

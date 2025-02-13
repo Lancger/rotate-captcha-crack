@@ -1,60 +1,75 @@
 # Rotate-Captcha-Crack
 
-[中文](README_zh-cn.md) | English
+中文 | [English](https://github.com/lumina37/rotate-captcha-crack)
 
 测试案例
 
+本地图片识别
+
 ```bash
-(env_py39) ➜  rotate-captcha-crack git:(master) python test_captcha.py
+➜  ✗ python test_captcha.py
 Use model: models/RotNetR/best.pth/best.pth
 Predict degree: 216.5625°
 ```
+API调用识别
 
-Predict the rotation angle of given picture through CNN. This project can be used for rotate-captcha cracking.
+```bash
+# 1、启动服务
+➜  ✗ git:(master) ✗ python server.py 
+======== Running on http://0.0.0.0:4396 ========
+(Press CTRL+C to quit)
+<2025-02-13 17:53:55.105> [INFO] 127.0.0.1 "POST / HTTP/1.1" 200 193
 
-Test result:
+# 2、测试识别
+➜  ✗ curl -X POST --data-binary @4_216.jpg http://127.0.0.1:4396
+{"err":{"code":0},"pred":216.5625}
+```
+
+CNN预测图片旋转角度，可用于破解旋转验证码。
+
+测试效果：
 
 ![test_result](https://user-images.githubusercontent.com/48282276/224320691-a8eefd23-392b-4580-a729-7869fa237eaa.png)
 
-Three kinds of model are implemented, as shown in the table below.
+本仓库实现了三类模型：
 
-| Name    | Backbone       | Cross-Domain Loss (less is better) | Params  | MACs  |
-| ------- | -------------- | ---------------------------------- | ------- | ----- |
-| RotNet  | ResNet50       | 53.4684°                           | 24.246M | 4.09G |
-| RotNetR | RegNet_Y_3_2GF | 6.5922°                            | 18.117M | 3.18G |
+| 名称    | Backbone       | 跨域测试误差（越小越好） | 参数量  | MACs  |
+| ------- | -------------- | ------------------------ | ------- | ----- |
+| RotNet  | ResNet50       | 53.4684°                 | 24.246M | 4.09G |
+| RotNetR | RegNet_Y_3_2GF | 6.5922°                  | 18.117M | 3.18G |
 
-RotNet is the implementation of [`d4nst/RotNet`](https://github.com/d4nst/RotNet/blob/master/train/train_street_view.py) over PyTorch. `RotNetR` is based on `RotNet`, with [`RegNet_Y_3_2GF`](https://arxiv.org/abs/2101.00590) as its backbone and class number of 128. The average prediction error is `7.1818°`, obtained by 128 epochs of training (3.4 hours) on the [COCO 2017 (Unlabeled) Dataset](http://images.cocodataset.org/zips/unlabeled2017.zip).
+`RotNet`为[`d4nst/RotNet`](https://github.com/d4nst/RotNet/blob/master/train/train_street_view.py)的PyTorch实现。`RotNetR`仅在`RotNet`的基础上将backbone替换为[`RegNet_Y_3_2GF`](https://arxiv.org/abs/2101.00590)，并将分类数减少至128。其在[COCO 2017 (Unlabeled) 数据集](https://pan.baidu.com/s/1iAZmJkaq_raJdKJDVLe6rQ?pwd=fsn9)上训练128个epoch（耗时3.4小时）得到的平均预测误差为`7.1818°`。
 
-The Cross-Domain Test uses [COCO 2017 (Unlabeled) Dataset](http://images.cocodataset.org/zips/unlabeled2017.zip) for training, and Captcha Pictures from Baidu (thanks to @xiangbei1997) for testing.
+跨域测试使用[COCO 2017 (Unlabeled) 数据集](https://pan.baidu.com/s/1iAZmJkaq_raJdKJDVLe6rQ?pwd=fsn9)作为训练集，百度验证码作为测试集（感谢@xiangbei1997）。
 
-The captcha picture used in the demo above comes from [RotateCaptchaBreak](https://github.com/chencchen/RotateCaptchaBreak/tree/master/data/baiduCaptcha)
+演示用到的百度验证码图片来自[RotateCaptchaBreak](https://github.com/chencchen/RotateCaptchaBreak/tree/master/data/baiduCaptcha)。
 
-## Try it!
+## 体验已有模型
 
-### Prepare
+### 准备环境
 
-+ CUDA device with mem>=16G for training (reduce the batch size if necessary)
++ 内存大小不少于16G的CUDA设备（如显存不足请酌减batch size）
 
-+ Python>=3.9,<3.13
++ 确保你的`Python`版本`>=3.9,<3.13`
 
-+ PyTorch>=2.0
++ 确保你的`PyTorch`版本`>=2.0`
 
-+ Clone the repository.
++ 拉取代码
 
 ```shell
 git clone https://github.com/lumina37/rotate-captcha-crack.git --depth 1
 cd ./rotate-captcha-crack
 ```
 
-+ Install all requiring dependencies.
++ 安装依赖
 
-This project strongly suggest you to use [`uv>=0.5.3`](https://docs.astral.sh/uv/) for package management. Run the following commands if you already have `uv`:
+强烈推荐使用[`uv>=0.5.3`](https://docs.astral.sh/uv/)作为包管理工具。如果你已经安装了`uv`，请执行以下命令：
 
 ```shell
 uv sync
 ```
 
-Or, if you prefer `conda`: The following steps will create a virtual env under the working directory. You can also use a named env.
+或者，如果你喜欢用`conda`：以下步骤会在项目文件夹下创建一个虚拟环境。你也可以使用具名环境。
 
 ```shell
 conda create -p .conda
@@ -63,110 +78,107 @@ conda install matplotlib tqdm tomli
 conda install pytorch torchvision pytorch-cuda=12.4 -c pytorch -c nvidia
 ```
 
-Or, if you prefer a direct `pip`:
+或者，如果你喜欢直接使用`pip`：
 
 ```shell
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 pip install .
 ```
 
-### Download the Pretrained Models
+### 下载预训练模型
 
-Download the `*.zip` files in [Release](https://github.com/lumina37/rotate-captcha-crack/releases) and unzip them all to the `./models` dir.
+下载[Release](https://github.com/lumina37/rotate-captcha-crack/releases)中的压缩包并解压到`./models`文件夹下。
 
-The directory structure will be like `./models/RotNetR/230228_20_07_25_000/best.pth`
+文件目录结构类似`./models/RotNetR/230228_20_07_25_000/best.pth`。
 
-The names of models will change frequently as the project is still in beta status. So, if any `FileNotFoundError` occurs, please try to rollback to the corresponding tag first.
+本项目仍处于beta阶段，模型名称会频繁发生变更，因此出现任何`FileNotFoundError`请先尝试用git回退到对应的tag。
 
-### Test the Rotation Effect by a Single Captcha Picture
+### 输入一个验证码图像并查看旋转效果
 
 ```shell
 uv run test_captcha.py
 ```
 
-Open `./debug.jpg` to check the result.
+打开`./debug.jpg`查看结果。
 
-If you do not have `uv`, please use:
+如果你没有安装`uv`的话，请使用：
 
 ```shell
 python test_captcha.py
 ```
 
-### Use HTTP Server
+### 使用http服务端
 
-+ Install extra dependencies
++ 安装额外依赖
 
-With `uv`:
+使用`uv`：
 
 ```shell
 uv pip install .[server]
 ```
 
-or with `conda`:
+或者使用`conda`：
 
 ```shell
 conda install aiohttp
 ```
 
-or with `pip`:
+或者使用`pip`：
 
 ```shell
 pip install .[server]
 ```
 
-+ Launch server
++ 运行服务端
+
+使用`uv`：
 
 ```shell
 uv run server.py
 ```
 
-If you do not have `uv`, just use:
+如果你没有安装`uv`的话，请使用：
 
 ```shell
 python server.py
 ```
 
-+ Another Shell to Send Images
++ 另开一命令行窗口发送图像
 
-Use curl:
+使用curl:
 
 ```shell
 curl -X POST --data-binary @test.jpg http://127.0.0.1:4396
 ```
 
-Or use Windows PowerShell:
+或使用Windows PowerShell:
 
 ```shell
 irm -Uri http://127.0.0.1:4396 -Method Post -InFile test.jpg
 ```
 
-## Train Your Own Model
+## 训练新模型
 
-### Prepare Datasets
+### 准备数据集
 
-+ For this project I'm using [Google Street View](https://www.crcv.ucf.edu/data/GMCP_Geolocalization/) and [Landscape-Dataset](https://github.com/yuweiming70/Landscape-Dataset) for training. You can collect some photos and leave them in one directory. Without any size or shape requirement.
++ 我这里直接扒的[谷歌街景](https://www.crcv.ucf.edu/data/GMCP_Geolocalization/)和[Landscape-Dataset](https://github.com/yuweiming70/Landscape-Dataset)，你也可以自己收集一些风景照并放到一个文件夹里，图像没有尺寸要求
 
-+ Modify the `dataset_root` variable in `train.py`, let it points to the directory containing images.
++ 在`train.py`里配置`dataset_root`变量指向装有图片的文件夹
 
-+ No manual labeling is required. All the cropping, rotation and resizing will be done soon after the image is loaded.
++ 不需要手动标注，dataset会在读取图片的同时自动完成矩形裁剪、缩放旋转等工作
 
-### Train
-
+### 训练
 
 ```shell
 uv run train_RotNetR.py
 ```
 
-### Validate the Model on Test Set
+### 在测试集上验证模型
 
 ```shell
 uv run test_RotNetR.py
 ```
 
-## Details of Design
+## 相关文章
 
-Most of the rotate-captcha cracking methods are based on [`d4nst/RotNet`](https://github.com/d4nst/RotNet), with `ResNet50` as its backbone. `RotNet` regards the angle prediction as a classification task with 360 classes, then uses cross entropy to compute the loss.
-
-Yet `CrossEntropyLoss` with one-hot labels will bring a uniform metric distance between all angles (e.g. $\mathrm{dist}(1°, 2°) = \mathrm{dist}(1°, 180°)$ ), clearly defies the common sense. *[Arbitrary-Oriented Object Detection with Circular Smooth Label (ECCV'20)](https://www.researchgate.net/publication/343636147_Arbitrary-Oriented_Object_Detection_with_Circular_Smooth_Label)* introduces an interesting trick, by smoothing the one-hot label, e.g. `[0,1,0,0] -> [0.1,0.8,0.1,0]`, CSL provides a loss measurement closer to our intuition, such that $\mathrm{dist}(1°,180°) \gt \mathrm{dist}(1°,3°)$.
-
-Meanwhile, the [`angle_error_regression`](https://github.com/d4nst/RotNet/blob/a56ea59818bbdd76d4dd8d83b8bbbaae6a802310/utils.py#L30-L36) proposed by [d4nst/RotNet](https://github.com/d4nst/RotNet) is less effective. That's because when dealing with outliers, the gradient leads to a non-convergence result. It's better to use a `SmoothL1Loss` for regression.
+[吾爱破解 - 简单聊聊旋转验证码攻防](https://www.52pojie.cn/thread-1754224-1-1.html)

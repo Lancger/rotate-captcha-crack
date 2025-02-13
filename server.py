@@ -25,7 +25,8 @@ opts = parser.parse_args()
 cls_num = DEFAULT_CLS_NUM
 model = RotNetR(cls_num=cls_num, train=False)
 model_path = WhereIsMyModel(model).with_index(opts.index).model_dir / "best.pth"
-model.load_state_dict(torch.load(model_path, weights_only=True))
+# model.load_state_dict(torch.load(model_path, weights_only=True))
+model.load_state_dict(torch.load(model_path, weights_only=True, map_location=torch.device('cpu')))
 model = model.to(device=device)
 model.eval()
 
